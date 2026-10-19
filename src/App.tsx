@@ -3423,12 +3423,12 @@ function ChatScreen({ user, onBack, onPhoto, onPhotoSelect, title = "궁금하�
                    <Markdown>{m.content}</Markdown>
 
                    {/* 유막제거, 유리발수 등 견적 관련 질문 답변 시 디테일링 매칭 버튼 출력 */}
-                   {m.role !== 'user' && (m.content.includes('유막') || m.content.includes('유리발수') || m.content.includes('디테일링') || m.content.includes('견적') || m.content.includes('스팀') || m.content.includes('엔진룸')) && (
+                   {m.role !== 'user' && (m.content.includes('유막') || m.content.includes('유리발수') || m.content.includes('디테일링') || m.content.includes('견적') || m.content.includes('스팀') || m.content.includes('엔진룸') || m.content.includes('수액') || m.content.includes('송진')) && (
                      <div className="mt-4 pt-3 border-t border-slate-200/80">
                        <button
                          onClick={() => {
                            if (onNavigateToMatching) {
-                             onNavigateToMatching((m.content.includes('스팀') || m.content.includes('엔진룸')) ? 'interior' : 'detailing');
+                             onNavigateToMatching((m.content.includes('스팀') || m.content.includes('엔진룸')) ? 'interior' : (m.content.includes('수액') || m.content.includes('송진')) ? 'polish' : 'detailing');
                            }
                          }}
                          className="w-full bg-gradient-to-r from-[#1ea08a] to-blue-600 hover:from-[#16806e] hover:to-blue-700 text-white font-black text-xs md:text-sm py-3 px-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
