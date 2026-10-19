@@ -101,7 +101,6 @@ const AI_SUGGESTED_QUESTIONS = [
   "스노우폼 뿌리고 대기하는 시간",
   "하부 세차 꼭 해야 하나요?",
   "물왁스 바를 때 꿀팁",
-  "초보자가 갖춰야 할 기본 세차 습관",
   "세차장 공용 거품 솔 써도 되나요?",
   "프리미엄 세차 순서와 방법"
 ];
@@ -485,6 +484,7 @@ export default function App() {
   });
   const [pendingProvider, setPendingProvider] = useState<'naver' | 'kakao' | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('세차장');
+  const [detailingCategory, setDetailingCategory] = useState<'polish' | 'interior' | 'detailing'>('polish');
   const isCallbackPath = typeof window !== 'undefined' && window.location.pathname.includes('/api/auth');
 
   useEffect(() => {
@@ -889,7 +889,7 @@ export default function App() {
         localStorage.setItem('demo_user', JSON.stringify(u)); // Save to localStorage to persist across refreshes
         setState(prev => ({ ...prev, user: u, view: 'home', modal: nextModal as any, pendingModal: null }));
       }} />;
-    case 'chat': return <ChatScreen user={state.user} onBack={() => setView('home')} onPhoto={() => setView('photo_upload_ai')} onPhotoSelect={(f) => setState(prev => ({...prev, view: 'photo_upload_ai', pendingPhoto: f}))} title="AI세차전문가한테 물어보세요!!" allowAutoAI={true} chatType="ai" onNavigateToGuide={() => setView('guide')} onNavigateToMatching={() => setView('detailing_matching')} />;
+    case 'chat': return <ChatScreen user={state.user} onBack={() => setView('home')} onPhoto={() => setView('photo_upload_ai')} onPhotoSelect={(f) => setState(prev => ({...prev, view: 'photo_upload_ai', pendingPhoto: f}))} title="AI세차전문가한테 물어보세요!!" allowAutoAI={true} chatType="ai" onNavigateToGuide={() => setView('guide')} onNavigateToMatching={(cat = 'polish') => { setDetailingCategory(cat); setView('detailing_matching'); }} />;
     case 'guide_query': {
       if (!state.user && !state.loading) {
         return <AuthScreen onBack={() => setView('home')} onLogin={(u) => {
@@ -909,7 +909,7 @@ export default function App() {
           allowAutoAI={false} 
           chatType="expert" 
           overrideSessionId={state.adminActiveSessionUid}
-          onNavigateToMatching={() => setView('detailing_matching')}
+          onNavigateToMatching={(cat = 'polish') => { setDetailingCategory(cat); setView('detailing_matching'); }}
         />
       );
     }
@@ -929,8 +929,8 @@ export default function App() {
     }
     case 'photo_upload_ai': return <PhotoUploadScreen user={state.user} onBack={() => { setState(prev => ({...prev, pendingPhoto: null})); setView('chat'); }} title="AI 세차 분석" chatType="ai" initialFile={state.pendingPhoto} />;
     case 'photo_upload_expert': return <PhotoUploadScreen user={state.user} onBack={() => { setState(prev => ({...prev, pendingPhoto: null})); setView('guide_query'); }} title={state.adminActiveSessionUid ? "전문가 답변란" : "전문가의 답변"} disableAI chatType="expert" overrideSessionId={state.adminActiveSessionUid} initialFile={state.pendingPhoto} />;
-    case 'review_matrix': return <ReviewMatrix onBack={() => setView('home')} user={state.user} onNavigateToMatching={() => setView('detailing_matching')} />;
-    case 'detailing_matching': return <DetailingMatchingScreen user={state.user} setView={setView} setState={setState} />;
+    case 'review_matrix': return <ReviewMatrix onBack={() => setView('home')} user={state.user} onNavigateToMatching={() => { setDetailingCategory('polish'); setView('detailing_matching'); }} />;
+    case 'detailing_matching': return <DetailingMatchingScreen user={state.user} setView={setView} setState={setState} initialCategory={detailingCategory} />;
     default: return <HomeScreen user={state.user} setView={setView} onOpenService={handleOpenService} setState={setState} state={state} />;
   }
 };
@@ -2625,8 +2625,8 @@ const DETAILING_SHOPS: DetailingShop[] = [
   }
 ];
 
-function DetailingMatchingScreen({ user, setView, setState }: { user: UserProfile | null, setView: (v: string) => void, setState: any }) {
-  const [selectedCategory, setSelectedCategory] = useState<'polish' | 'interior' | 'detailing'>('polish');
+function DetailingMatchingScreen({ user, setView, setState, initialCategory = 'polish' }: { user: UserProfile | null, setView: (v: string) => void, setState: any, initialCategory?: 'polish' | 'interior' | 'detailing' }) {
+  const [selectedCategory, setSelectedCategory] = useState<'polish' | 'interior' | 'detailing'>(initialCategory);
   const [selectedRegion, setSelectedRegion] = useState<string>('전체 (강남구)');
   const [isRegionOpen, setIsRegionOpen] = useState<boolean>(false);
   const [quoteShop, setQuoteShop] = useState<DetailingShop | null>(null);
@@ -3102,7 +3102,7 @@ function DetailingMatchingScreen({ user, setView, setState }: { user: UserProfil
     </div>
   );
 }
-function ChatScreen({ user, onBack, onPhoto, onPhotoSelect, title = "궁금하신점은 무엇입니까~", placeholder = "궁금한 내용을 입력하세요", allowAutoAI = false, chatType = "general", overrideSessionId, onNavigateToGuide, onNavigateToMatching }: { user: UserProfile | null, onBack: () => void, onPhoto: () => void, onPhotoSelect?: (file: File) => void, title?: string, placeholder?: string, allowAutoAI?: boolean, chatType?: "ai" | "expert" | "general", overrideSessionId?: string, onNavigateToGuide?: () => void, onNavigateToMatching?: () => void }) {
+function ChatScreen({ user, onBack, onPhoto, onPhotoSelect, title = "궁금하신점은 무엇입니까~", placeholder = "궁금한 내용을 입력하세요", allowAutoAI = false, chatType = "general", overrideSessionId, onNavigateToGuide, onNavigateToMatching }: { user: UserProfile | null, onBack: () => void, onPhoto: () => void, onPhotoSelect?: (file: File) => void, title?: string, placeholder?: string, allowAutoAI?: boolean, chatType?: "ai" | "expert" | "general", overrideSessionId?: string, onNavigateToGuide?: () => void, onNavigateToMatching?: (category?: 'polish' | 'interior' | 'detailing') => void }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -3423,17 +3423,17 @@ function ChatScreen({ user, onBack, onPhoto, onPhotoSelect, title = "궁금하�
                    <Markdown>{m.content}</Markdown>
 
                    {/* 유막제거, 유리발수 등 견적 관련 질문 답변 시 디테일링 매칭 버튼 출력 */}
-                   {m.role !== 'user' && (m.content.includes('유막') || m.content.includes('유리발수') || m.content.includes('디테일링') || m.content.includes('견적')) && (
+                   {m.role !== 'user' && (m.content.includes('유막') || m.content.includes('유리발수') || m.content.includes('디테일링') || m.content.includes('견적') || m.content.includes('스팀') || m.content.includes('엔진룸')) && (
                      <div className="mt-4 pt-3 border-t border-slate-200/80">
                        <button
                          onClick={() => {
                            if (onNavigateToMatching) {
-                             onNavigateToMatching();
+                             onNavigateToMatching((m.content.includes('스팀') || m.content.includes('엔진룸')) ? 'interior' : 'detailing');
                            }
                          }}
                          className="w-full bg-gradient-to-r from-[#1ea08a] to-blue-600 hover:from-[#16806e] hover:to-blue-700 text-white font-black text-xs md:text-sm py-3 px-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
                        >
-                         <span>✨ 디테일링 매장 실시간 견적 문의하기</span>
+                         <span>{(m.content.includes('스팀') || m.content.includes('엔진룸')) ? '✨ 내 위치에 가까운 스팀세차장 매칭' : '✨ 내 위치에 가까운 디테일링 매장 매칭'}</span>
                          <ChevronRight size={18} />
                        </button>
                      </div>
