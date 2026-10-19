@@ -3345,30 +3345,18 @@ function ChatScreen({ user, onBack, onPhoto, onPhotoSelect, title = "궁금하�
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col gap-4 mb-4"
+              className="flex items-center gap-2 mb-2 px-2 flex-wrap"
             >
-              <div className="flex items-center gap-2 mb-2 px-2">
-                <Sparkles size={18} className="text-[#1ea08a]" />
-                <span className="text-[13px] font-black text-slate-600">자주 묻는 30가지 질문을 터치해보세요!</span>
-              </div>
-              <div className="flex flex-wrap gap-2 px-1">
-                {AI_SUGGESTED_QUESTIONS.map((q, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setInput(q);
-                      // 약간의 지연 후 전송하여 사용자가 입력창에 들어간 걸 볼 수 있게 함
-                      setTimeout(() => {
-                        const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
-                        document.dispatchEvent(enterEvent); // (임시 방편) 혹은 그냥 sendMessage 로직 바로 호출
-                      }, 100);
-                    }}
-                    className="bg-white border-2 border-slate-200 text-slate-700 text-[13px] font-bold px-4 py-2.5 rounded-full hover:border-[#1ea08a] hover:text-[#1ea08a] hover:bg-[#1ea08a]/5 transition-all shadow-sm active:scale-95 text-left"
-                  >
-                    {idx + 1}. {q}
-                  </button>
-                ))}
-              </div>
+              <Sparkles size={16} className="text-[#1ea08a] shrink-0" />
+              <span className="text-[13px] font-bold text-slate-500 shrink-0">질문 예시:</span>
+              <button
+                onClick={() => {
+                  setInput("동선이 꼬이지 않고 빨리하는 세차 법");
+                }}
+                className="bg-white border-2 border-slate-200 hover:border-[#1ea08a] text-slate-700 hover:text-[#1ea08a] text-[13px] font-bold px-4 py-2 rounded-full transition-all shadow-sm active:scale-95 text-left cursor-pointer"
+              >
+                동선이 꼬이지 않고 빨리하는 세차 법
+              </button>
             </motion.div>
           )}
 
